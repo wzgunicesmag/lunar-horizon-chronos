@@ -9,31 +9,39 @@ interface MoonViewer3DProps {
 
 function Moon({ phase }: { phase: number }) {
   const moonRef = useRef<THREE.Mesh>(null);
+  
+  // Calculate light position based on moon phase
+  // phase 0 = new moon (light from behind)
+  // phase 0.25 = first quarter (light from right)
+  // phase 0.5 = full moon (light from front)
+  // phase 0.75 = last quarter (light from left)
+  const angle = phase * Math.PI * 2;
+  const lightX = Math.sin(angle) * 5;
+  const lightZ = Math.cos(angle) * 5;
 
   return (
     <group>
-      <Sphere ref={moonRef} args={[2, 64, 64]} scale={1}>
+      {/* Main directional light that creates the phase effect */}
+      <directionalLight 
+        position={[lightX, 0, lightZ]} 
+        intensity={2.5} 
+        color="#ffffff"
+        castShadow
+      />
+      
+      {/* Moon sphere */}
+      <Sphere ref={moonRef} args={[2, 64, 64]} receiveShadow>
         <meshStandardMaterial
           color="#e8e8e8"
-          roughness={0.9}
-          metalness={0.1}
-          emissive="#666666"
-          emissiveIntensity={0.2}
-        />
-      </Sphere>
-      
-      {/* Shadow overlay for moon phase */}
-      <Sphere args={[2.01, 64, 64]} rotation={[0, (phase * Math.PI * 2), 0]}>
-        <meshBasicMaterial
-          color="#000000"
-          transparent
-          opacity={0.85}
-          side={THREE.BackSide}
+          roughness={0.95}
+          metalness={0.05}
+          emissive="#1a1a1a"
+          emissiveIntensity={0.1}
         />
       </Sphere>
 
-      {/* Ambient glow */}
-      <pointLight position={[0, 0, 0]} intensity={0.5} color="#a78bfa" distance={8} />
+      {/* Subtle ambient glow */}
+      <pointLight position={[0, 0, 0]} intensity={0.3} color="#a78bfa" distance={8} />
     </group>
   );
 }
@@ -41,9 +49,9 @@ function Moon({ phase }: { phase: number }) {
 export default function MoonViewer3D({ phase }: MoonViewer3DProps) {
   return (
     <div className="w-full h-full animate-fade-in">
-      <Canvas camera={{ position: [0, 0, 6], fov: 50 }}>
-        <ambientLight intensity={0.3} />
-        <directionalLight position={[5, 3, 5]} intensity={1.5} color="#ffffff" />
+      <Canvas camera={{ position: [0, 0, 6], fov: 50 }} shadows>
+        {/* Very low ambient light to see the dark side */}
+        <ambientLight intensity={0.15} />
         <Moon phase={phase} />
         <OrbitControls
           enableZoom={false}
