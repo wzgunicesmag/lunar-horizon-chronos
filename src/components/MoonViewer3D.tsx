@@ -55,11 +55,16 @@ function Moon({ phase }: { phase: number }) {
 export default function MoonViewer3D({ phase }: MoonViewer3DProps) {
   return (
     <div className="w-full h-full animate-fade-in">
-      <Canvas camera={{ position: [0, 0, 6], fov: 50 }} shadows>
+      <Canvas 
+        camera={{ position: [0, 0, 6], fov: 50 }} 
+        shadows
+        gl={{ preserveDrawingBuffer: true }}
+      >
         {/* Very low ambient light to see the dark side */}
         <ambientLight intensity={0.15} />
         <Moon phase={phase} />
         <OrbitControls
+          makeDefault
           enableZoom={false}
           enablePan={false}
           autoRotate={false}
