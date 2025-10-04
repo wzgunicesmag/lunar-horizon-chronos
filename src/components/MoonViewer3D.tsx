@@ -1,4 +1,4 @@
-import { Canvas } from '@react-three/fiber';
+import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls, Sphere } from '@react-three/drei';
 import { useRef } from 'react';
 import * as THREE from 'three';
@@ -9,18 +9,24 @@ interface MoonViewer3DProps {
 
 function Moon({ phase }: { phase: number }) {
   const moonRef = useRef<THREE.Mesh>(null);
+  const groupRef = useRef<THREE.Group>(null);
+  
+  // Animate moon rotation in a pendulum motion
+  useFrame(({ clock }) => {
+    if (groupRef.current) {
+      // Gentle swaying motion from -0.3 to 0.3 radians (about -17° to 17°)
+      const swing = Math.sin(clock.getElapsedTime() * 0.5) * 0.3;
+      groupRef.current.rotation.y = swing;
+    }
+  });
   
   // Calculate light position based on moon phase
-  // phase 0 = new moon (light from behind)
-  // phase 0.25 = first quarter (light from right)
-  // phase 0.5 = full moon (light from front)
-  // phase 0.75 = last quarter (light from left)
   const angle = phase * Math.PI * 2;
   const lightX = Math.sin(angle) * 5;
   const lightZ = Math.cos(angle) * 5;
 
   return (
-    <group>
+    <group ref={groupRef}>
       {/* Main directional light that creates the phase effect */}
       <directionalLight 
         position={[lightX, 0, lightZ]} 
@@ -56,8 +62,7 @@ export default function MoonViewer3D({ phase }: MoonViewer3DProps) {
         <OrbitControls
           enableZoom={false}
           enablePan={false}
-          autoRotate
-          autoRotateSpeed={0.5}
+          autoRotate={false}
           minPolarAngle={Math.PI / 2.5}
           maxPolarAngle={Math.PI / 1.5}
         />
