@@ -1,6 +1,6 @@
 import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls, Sphere } from '@react-three/drei';
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 
 interface MoonViewer3DProps {
@@ -10,6 +10,13 @@ interface MoonViewer3DProps {
 function Moon({ phase }: { phase: number }) {
   const moonRef = useRef<THREE.Mesh>(null);
   const groupRef = useRef<THREE.Group>(null);
+  const lightRef = useRef<THREE.DirectionalLight>(null);
+  const currentPhaseRef = useRef(phase);
+  const targetPhaseRef = useRef(phase);
+
+  useEffect(() => {
+    targetPhaseRef.current = phase;
+  }, [phase]);
   
   // Animate moon rotation in a pendulum motion
   useFrame(({ clock }) => {
@@ -19,18 +26,30 @@ function Moon({ phase }: { phase: number }) {
       const swing = Math.sin(clock.getElapsedTime() * 0.5) * 0.05;
       groupRef.current.rotation.y = swing;
     }
+
+    const phaseDiff = targetPhaseRef.current - currentPhaseRef.current;
+    if (Math.abs(phaseDiff) > 0.0005) {
+      currentPhaseRef.current += phaseDiff * 0.08;
+    } else {
+      currentPhaseRef.current = targetPhaseRef.current;
+    }
+
+    if (lightRef.current) {
+      const angle = currentPhaseRef.current * Math.PI * 2;
+      const lightX = Math.sin(angle) * 5;
+      const lightZ = Math.cos(angle) * 5;
+      lightRef.current.position.set(lightX, 0, lightZ);
+      lightRef.current.target.position.set(0, 0, 0);
+      lightRef.current.target.updateMatrixWorld();
+    }
   });
-  
-  // Calculate light position based on moon phase
-  const angle = phase * Math.PI * 2;
-  const lightX = Math.sin(angle) * 5;
-  const lightZ = Math.cos(angle) * 5;
 
   return (
     <group ref={groupRef}>
       {/* Main directional light that creates the phase effect */}
       <directionalLight 
-        position={[lightX, 0, lightZ]} 
+        ref={lightRef}
+        position={[Math.sin(phase * Math.PI * 2) * 5, 0, Math.cos(phase * Math.PI * 2) * 5]} 
         intensity={2.5} 
         color="#ffffff"
         castShadow
@@ -68,6 +87,7 @@ export default function MoonViewer3D({ phase }: MoonViewer3DProps) {
           makeDefault
           enableZoom={false}
           enablePan={false}
+          enableRotate={false}
           autoRotate={false}
           minPolarAngle={Math.PI / 2.5}
           maxPolarAngle={Math.PI / 1.5}
