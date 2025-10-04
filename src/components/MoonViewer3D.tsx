@@ -14,8 +14,9 @@ function Moon({ phase }: { phase: number }) {
   // Animate moon rotation in a pendulum motion
   useFrame(({ clock }) => {
     if (groupRef.current) {
-      // Gentle swaying motion from -0.3 to 0.3 radians (about -17° to 17°)
-      const swing = Math.sin(clock.getElapsedTime() * 0.5) * 0.3;
+      // Gentle swaying motion from -0.1 to 0.1 radians (about -6° to 6°)
+      // Slower speed (0.3) and smaller amplitude (0.1) for smoother movement
+      const swing = Math.sin(clock.getElapsedTime() * 0.5) * 0.05;
       groupRef.current.rotation.y = swing;
     }
   });
