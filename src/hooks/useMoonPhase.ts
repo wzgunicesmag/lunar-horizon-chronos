@@ -1,14 +1,10 @@
 import { useState, useEffect } from 'react';
+import { fetchMoonPhaseWithCache } from '@/services/nasaApi';
+import { getUserLocation, getDefaultLocation } from '@/services/geolocation';
+import type { MoonPhaseData, LocationData } from '@/types/moon';
 
-interface MoonPhaseData {
-  phase: number; // 0-1
-  phaseName: string;
-  phasePercentage: number;
-  illumination: number;
-}
-
-// Calculate moon phase based on date
-function calculateMoonPhase(date: Date): MoonPhaseData {
+// Calculate moon phase based on date (FALLBACK LOCAL)
+function calculateMoonPhaseLocal(date: Date): MoonPhaseData {
   const year = date.getFullYear();
   const month = date.getMonth() + 1;
   const day = date.getDate();
@@ -54,15 +50,89 @@ function calculateMoonPhase(date: Date): MoonPhaseData {
     phaseName,
     phasePercentage: illumination,
     illumination,
+    source: 'local'
   };
 }
 
 export function useMoonPhase(selectedDate: Date) {
-  const [moonData, setMoonData] = useState<MoonPhaseData>(() => calculateMoonPhase(selectedDate));
+  const [moonData, setMoonData] = useState<MoonPhaseData>(() => 
+    calculateMoonPhaseLocal(selectedDate)
+  );
+  const [location, setLocation] = useState<LocationData | null>(null);
+  const [loading, setLoading] = useState(true);
 
+  // Obtener ubicación del usuario al montar el componente
   useEffect(() => {
-    setMoonData(calculateMoonPhase(selectedDate));
-  }, [selectedDate]);
+    let isMounted = true;
+    
+    getUserLocation().then((loc) => {
+      if (isMounted) {
+        setLocation(loc || getDefaultLocation());
+      }
+    });
 
-  return moonData;
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  // Calcular fase lunar cuando cambia la fecha o ubicación
+  useEffect(() => {
+    let isMounted = true;
+    
+    async function fetchMoonData() {
+      setLoading(true);
+      
+      try {
+        // Intentar obtener datos de la API (NASA/Astronomy)
+        const nasaData = await fetchMoonPhaseWithCache(selectedDate, location);
+        
+        if (isMounted) {
+          setMoonData({
+            phase: nasaData.phase,
+            phaseName: nasaData.phaseName,
+            phasePercentage: nasaData.illumination,
+            illumination: nasaData.illumination,
+            distance: nasaData.distance,
+            angularDiameter: nasaData.angularDiameter,
+            location: location?.city,
+            source: 'nasa'
+          });
+        }
+      } catch (error) {
+        // Fallback al cálculo local si la API falla
+        console.warn('Usando cálculo local como fallback:', error);
+        
+        if (isMounted) {
+          const localData = calculateMoonPhaseLocal(selectedDate);
+          setMoonData({
+            ...localData,
+            location: location?.city
+          });
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    }
+
+    // Esperar a tener ubicación antes de hacer el cálculo
+    if (location) {
+      fetchMoonData();
+    } else {
+      // Si no hay ubicación, usar cálculo local
+      setMoonData({
+        ...calculateMoonPhaseLocal(selectedDate),
+        location: undefined
+      });
+      setLoading(false);
+    }
+
+    return () => {
+      isMounted = false;
+    };
+  }, [selectedDate, location]);
+
+  return { ...moonData, loading, userLocation: location?.city };
 }

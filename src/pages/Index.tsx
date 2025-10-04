@@ -1,5 +1,5 @@
 import { useState, Suspense } from "react";
-import { Moon } from "lucide-react";
+import { Moon, MapPin, Loader2 } from "lucide-react";
 import MoonViewer3D from "@/components/MoonViewer3D";
 import LunarCalendar from "@/components/LunarCalendar";
 import LunarInfo from "@/components/LunarInfo";
@@ -7,7 +7,7 @@ import { useMoonPhase } from "@/hooks/useMoonPhase";
 
 const Index = () => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const moonData = useMoonPhase(selectedDate);
+  const { loading, userLocation, source, ...moonData } = useMoonPhase(selectedDate);
 
   return (
     <div className="min-h-screen w-full overflow-hidden relative">
@@ -38,6 +38,15 @@ const Index = () => {
           <p className="text-muted-foreground text-lg">
             Explora el ciclo lunar y sus influencias
           </p>
+          
+          {/* Location and data source indicator */}
+          {userLocation && (
+            <div className="flex items-center justify-center gap-2 mt-3 text-sm text-muted-foreground">
+              <MapPin className="w-4 h-4" />
+              <span>{userLocation}</span>
+              {loading && <Loader2 className="w-3 h-3 animate-spin ml-1" />}
+            </div>
+          )}
         </header>
 
         {/* Main Grid */}
@@ -78,7 +87,16 @@ const Index = () => {
 
         {/* Footer */}
         <footer className="text-center mt-16 text-muted-foreground text-sm animate-fade-in">
-          <p>Datos calculados astronómicamente • Sincronizado con el ciclo lunar</p>
+          <p>
+            Datos {source === 'nasa' ? 'obtenidos de API astronómica' : 'calculados localmente'} 
+            {' • '} 
+            Sincronizado con el ciclo lunar
+          </p>
+          {source === 'nasa' && (
+            <p className="text-xs mt-2 text-muted-foreground/70">
+              Datos precisos según tu ubicación geográfica
+            </p>
+          )}
         </footer>
       </div>
     </div>
