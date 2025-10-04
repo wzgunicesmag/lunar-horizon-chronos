@@ -42,7 +42,16 @@ const Index = () => {
 
         {/* Main Grid */}
         <div className="grid lg:grid-cols-2 gap-8 max-w-7xl mx-auto">
-          {/* Left Column - 3D Moon */}
+          {/* Left Column - Calendar */}
+          <div className="space-y-6">
+            {/* Calendar */}
+            <LunarCalendar
+              selectedDate={selectedDate}
+              onDateSelect={setSelectedDate}
+            />
+          </div>
+
+          {/* Right Column - 3D Moon and Info */}
           <div className="space-y-6">
             <div className="card-glass rounded-2xl p-8 h-[500px] relative overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 pointer-events-none" />
@@ -60,15 +69,6 @@ const Index = () => {
               </Suspense>
             </div>
 
-            {/* Calendar */}
-            <LunarCalendar
-              selectedDate={selectedDate}
-              onDateSelect={setSelectedDate}
-            />
-          </div>
-
-          {/* Right Column - Lunar Info */}
-          <div>
             <LunarInfo
               phaseName={moonData.phaseName}
               phasePercentage={moonData.phasePercentage}
