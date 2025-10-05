@@ -3,344 +3,173 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
-import { useState, useEffect } from "react";
-import { fetchMoonPhaseWithCache } from "@/services/nasaApi";
-import type { MoonPhaseData } from "@/types/moon";
 
 interface LunarCalendarProps {
   onDateSelect: (date: Date) => void;
   selectedDate: Date;
 }
 
-// Cache centralizado compartido
-const moonDataCache = new Map<string, MoonPhaseData>();
+// Calculate moon phase for any date (same as useMoonPhase.ts)
+function getMoonPhase(date: Date): number {
+  const year = date.getFullYear();
+  const month = date.getMonth() + 1;
+  const day = date.getDate();
 
-// Hook para obtener datos de un mes completo
-function useMonthMoonData(currentMonth: Date) {
-  const [monthData, setMonthData] = useState<Map<string, MoonPhaseData>>(new Map());
-  const [loading, setLoading] = useState(false);
+  // Julian date calculation
+  let jd = 367 * year - Math.floor(7 * (year + Math.floor((month + 9) / 12)) / 4) +
+    Math.floor(275 * month / 9) + day + 1721013.5;
 
-  useEffect(() => {
-    let isMounted = true;
-
-    async function fetchMonthData() {
-      setLoading(true);
-      const newData = new Map<string, MoonPhaseData>();
-      
-      // Obtener primer y último día del mes visible
-      const firstDay = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
-      const lastDay = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0);
-      
-      // También incluir días del mes anterior y siguiente que se muestran
-      const startDate = new Date(firstDay);
-      startDate.setDate(startDate.getDate() - 7); // 7 días antes
-      
-      const endDate = new Date(lastDay);
-      endDate.setDate(endDate.getDate() + 7); // 7 días después
-
-      // Fetch all dates in parallel
-      const promises: Promise<void>[] = [];
-      const currentDate = new Date(startDate);
-
-      while (currentDate <= endDate) {
-        const dateKey = currentDate.toDateString();
-        const dateCopy = new Date(currentDate);
-
-        // Check cache first
-        if (moonDataCache.has(dateKey)) {
-          newData.set(dateKey, moonDataCache.get(dateKey)!);
-        } else {
-          // Fetch from API
-          promises.push(
-            fetchMoonPhaseWithCache(dateCopy, null)
-              .then((apiData) => {
-                const moonPhaseData: MoonPhaseData = {
-                  phase: apiData.phase,
-                  phaseName: apiData.phaseName,
-                  phasePercentage: apiData.illumination,
-                  illumination: apiData.illumination,
-                  source: 'nasa'
-                };
-                moonDataCache.set(dateKey, moonPhaseData);
-                newData.set(dateKey, moonPhaseData);
-              })
-              .catch((error) => {
-                console.error(`Error fetching moon data for ${dateKey}:`, error);
-              })
-          );
-        }
-
-        currentDate.setDate(currentDate.getDate() + 1);
-      }
-
-      // Wait for all fetches to complete
-      await Promise.all(promises);
-
-      if (isMounted) {
-        setMonthData(newData);
-        setLoading(false);
-      }
-    }
-
-    fetchMonthData();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [currentMonth.getMonth(), currentMonth.getFullYear()]);
-
-  return { monthData, loading };
+  // Days since known new moon (January 6, 2000)
+  const daysSinceNew = jd - 2451549.5;
+  
+  // Moon phase (synodic month ≈ 29.53 days)
+  const newMoons = daysSinceNew / 29.53;
+  let phase = newMoons - Math.floor(newMoons);
+  
+  if (phase < 0) phase += 1;
+  
+  // 0 = luna nueva, 0.5 = luna llena (igual que useMoonPhase)
+  return phase;
 }
 
-// Componente de ícono de fase lunar - SINCRONIZADO CON LA LÓGICA 3D
-function MoonPhaseIcon({ 
-  date, 
-  isSelected,
-  moonData 
-}: { 
-  date: Date; 
-  isSelected: boolean;
-  moonData?: MoonPhaseData;
-}) {
+// Component to render moon phase icon (matches API calculation)
+function MoonPhaseIcon({ phase }: { phase: number }) {
   const size = 32;
   const center = size / 2;
-  const radius = size / 2 - 1.5;
+  const radius = size / 2 - 2;
 
-  if (!moonData) {
+  // New moon - completely dark
+  if (phase < 0.03 || phase > 0.97) {
     return (
-      <div className="w-8 h-8 rounded-full bg-muted-foreground/10 animate-pulse" />
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="mx-auto">
+        <circle cx={center} cy={center} r={radius} fill="hsl(var(--muted))" />
+      </svg>
+    );
+  }
+  
+  // Full moon - completely illuminated
+  if (phase >= 0.47 && phase <= 0.53) {
+    return (
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="mx-auto">
+        <circle cx={center} cy={center} r={radius} fill="hsl(var(--primary))" />
+      </svg>
     );
   }
 
-  const phase = moonData.phase;
+  // Calculate the shape of the illuminated portion
+  // The terminator (day/night line) is an ellipse that varies with phase
+  // Using the same formula as the 3D viewer and API
   
-  // MISMA LÓGICA que MoonViewer3D: angle calcula la posición de la luz
+  const isWaxing = phase < 0.5;
+  
+  // Calculate the x-radius of the terminator ellipse
+  // This creates the crescent/gibbous shape
+  // cos(0) = 1 (new moon, terminator at right edge)
+  // cos(π/2) = 0 (quarter moon, terminator at center)
+  // cos(π) = -1 (full moon, terminator at left edge)
   const angle = phase * Math.PI * 2;
-  const lightX = Math.sin(angle);
+  const terminatorRadius = Math.abs(Math.cos(angle)) * radius;
   
-  // La iluminación se calcula desde la posición de la luz
-  // lightX va de -1 (nueva) a +1 (llena) pasando por 0
-  const illuminationFactor = (lightX + 1) / 2; // 0 a 1
-
+  let path: string;
+  
+  if (isWaxing) {
+    // Waxing: 0 to 0.5 - light from RIGHT side
+    // The lit portion grows from a thin crescent to full
+    if (phase < 0.25) {
+      // Waxing crescent: thin crescent on the right
+      path = `
+        M ${center},${center - radius}
+        A ${terminatorRadius},${radius} 0 0,0 ${center},${center + radius}
+        A ${radius},${radius} 0 0,0 ${center},${center - radius}
+      `;
+    } else {
+      // Waxing gibbous: more than half lit on the right
+      path = `
+        M ${center},${center - radius}
+        A ${terminatorRadius},${radius} 0 0,1 ${center},${center + radius}
+        A ${radius},${radius} 0 0,0 ${center},${center - radius}
+      `;
+    }
+  } else {
+    // Waning: 0.5 to 1 - light from LEFT side
+    // The lit portion shrinks from full to a thin crescent
+    if (phase < 0.75) {
+      // Waning gibbous: more than half lit on the left
+      path = `
+        M ${center},${center - radius}
+        A ${radius},${radius} 0 0,1 ${center},${center + radius}
+        A ${terminatorRadius},${radius} 0 0,1 ${center},${center - radius}
+      `;
+    } else {
+      // Waning crescent: thin crescent on the left
+      path = `
+        M ${center},${center - radius}
+        A ${radius},${radius} 0 0,1 ${center},${center + radius}
+        A ${terminatorRadius},${radius} 0 0,0 ${center},${center - radius}
+      `;
+    }
+  }
+  
   return (
-    <svg 
-      width={size} 
-      height={size} 
-      viewBox={`0 0 ${size} ${size}`} 
-      className={cn(
-        "transition-all duration-200",
-        isSelected && "scale-110 drop-shadow-[0_0_8px_rgba(168,85,247,0.6)]"
-      )}
-    >
-      <defs>
-        <clipPath id={`moon-clip-${date.getTime()}`}>
-          <circle cx={center} cy={center} r={radius} />
-        </clipPath>
-      </defs>
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="mx-auto">
+      {/* Dark side of moon (base) */}
+      <circle cx={center} cy={center} r={radius} fill="hsl(var(--muted))" />
       
-      <g clipPath={`url(#moon-clip-${date.getTime()})`}>
-        {/* Fondo oscuro - lado no iluminado */}
-        <circle cx={center} cy={center} r={radius} fill="#1a1a2e" />
-        
-        {/* Renderizar la fase basada en illuminationFactor */}
-        {renderMoonPhase(center, radius, phase, illuminationFactor, date.getTime())}
-      </g>
-      
-      {/* Borde exterior */}
-      <circle 
-        cx={center} 
-        cy={center} 
-        r={radius} 
-        fill="none"
-        stroke="#2d2d44"
-        strokeWidth={0.5}
-      />
+      {/* Illuminated portion */}
+      <path d={path} fill="hsl(var(--primary))" />
     </svg>
   );
 }
 
-// Renderiza la fase lunar con la MISMA lógica que el 3D
-function renderMoonPhase(
-  center: number,
-  radius: number,
-  phase: number,
-  illuminationFactor: number,
-  uniqueId: number
-) {
-  const moonLightColor = "#e8e8e8";
-  const moonDarkColor = "#1a1a2e";
-  const moonGlowColor = "#a78bfa";
-
-  // Luna Nueva (casi sin iluminación)
-  if (illuminationFactor < 0.05) {
-    return (
-      <circle 
-        cx={center} 
-        cy={center} 
-        r={radius * 0.2} 
-        fill={moonGlowColor} 
-        opacity={0.6} 
-      />
-    );
-  }
-
-  // Luna Llena (casi completamente iluminada)
-  if (illuminationFactor > 0.95) {
-    return (
-      <circle 
-        cx={center} 
-        cy={center} 
-        r={radius} 
-        fill={moonLightColor} 
-      />
-    );
-  }
-
-  // Determinar si está creciendo o menguando
-  const isWaxing = phase < 0.5;
-  
-  // Calcular el ancho de la parte iluminada
-  // illuminationFactor va de 0 (nueva) a 1 (llena)
-  // Convertir a -1 (nueva) a +1 (llena) para el cálculo
-  const illuminatedWidth = (illuminationFactor - 0.5) * 2; // -1 a +1
-  const absWidth = Math.abs(illuminatedWidth);
-
-  // Fase de creciente/menguante (menos de 50% iluminado)
-  if (absWidth < 0.5) {
-    // Creciente delgado
-    const crescentWidth = radius * absWidth * 2;
-    
-    // Si está creciendo, la luz viene de la derecha
-    // Si está menguando, la luz viene de la izquierda
-    const crescentX = isWaxing 
-      ? center + radius - crescentWidth 
-      : center - radius + crescentWidth;
-    
-    return (
-      <ellipse 
-        cx={crescentX} 
-        cy={center} 
-        rx={crescentWidth} 
-        ry={radius} 
-        fill={moonGlowColor} 
-      />
-    );
-  } 
-  // Fase gibosa (más de 50% iluminado)
-  else {
-    // Mostrar la luna casi llena con una sombra
-    const shadowWidth = radius * (1 - absWidth) * 2;
-    
-    // La sombra está en el lado opuesto a la luz
-    const shadowX = isWaxing 
-      ? center - radius + shadowWidth 
-      : center + radius - shadowWidth;
-    
-    return (
-      <g>
-        {/* Luna iluminada */}
-        <circle 
-          cx={center} 
-          cy={center} 
-          r={radius} 
-          fill={moonLightColor} 
-        />
-        {/* Sombra */}
-        <ellipse 
-          cx={shadowX} 
-          cy={center} 
-          rx={shadowWidth} 
-          ry={radius} 
-          fill={moonDarkColor} 
-        />
-      </g>
-    );
-  }
-}
-
 export default function LunarCalendar({ onDateSelect, selectedDate }: LunarCalendarProps) {
-  const [currentMonth, setCurrentMonth] = useState(selectedDate);
-  const { monthData, loading } = useMonthMoonData(currentMonth);
-
-  // Obtener datos de la luna para una fecha específica
-  const getMoonDataForDate = (date: Date): MoonPhaseData | undefined => {
-    return monthData.get(date.toDateString());
-  };
-
   return (
-    <Card className="card-glass p-8 animate-fade-in relative">
-      {loading && (
-        <div className="absolute top-4 right-4">
-          <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-        </div>
-      )}
-      
+    <Card className="card-glass p-8 animate-fade-in">
       <h2 className="text-2xl font-semibold mb-6 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
         Calendario Lunar
       </h2>
-      
       <DayPicker
         mode="single"
         selected={selectedDate}
         onSelect={(date) => date && onDateSelect(date)}
-        month={currentMonth}
-        onMonthChange={setCurrentMonth}
         showOutsideDays={true}
-        className="p-3"
+        className={cn("p-3 pointer-events-auto")}
         classNames={{
           months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
           month: "space-y-4 w-full",
           caption: "flex justify-center pt-1 relative items-center mb-4",
-          caption_label: "text-lg font-medium text-foreground",
+          caption_label: "text-lg font-medium",
           nav: "space-x-1 flex items-center",
           nav_button: cn(
             buttonVariants({ variant: "outline" }),
-            "h-9 w-9 bg-transparent p-0 opacity-70 hover:opacity-100 border-primary/30 hover:border-primary"
+            "h-9 w-9 bg-transparent p-0 opacity-50 hover:opacity-100",
           ),
           nav_button_previous: "absolute left-1",
           nav_button_next: "absolute right-1",
           table: "w-full border-collapse",
-          head_row: "flex w-full justify-around mb-3",
-          head_cell: "text-muted-foreground rounded-md w-20 font-medium text-sm",
-          row: "flex w-full justify-around mt-2",
+          head_row: "flex w-full justify-around mb-2",
+          head_cell: "text-muted-foreground rounded-md w-16 font-medium text-sm",
+          row: "flex w-full justify-around mt-1",
           cell: "relative p-1",
           day: cn(
-            "h-24 w-20 p-2 font-normal flex flex-col items-center justify-center gap-2 rounded-lg transition-all duration-200",
-            "hover:bg-primary/10 hover:scale-105 cursor-pointer",
-            "border border-transparent hover:border-primary/30"
+            "h-20 w-16 p-1 font-normal flex flex-col items-center justify-center gap-1 rounded-md hover:bg-accent transition-colors cursor-pointer",
+            "aria-selected:bg-primary/20 aria-selected:ring-2 aria-selected:ring-primary"
           ),
-          day_selected: cn(
-            "bg-gradient-to-br from-primary/20 to-secondary/20",
-            "ring-2 ring-primary shadow-lg scale-105",
-            "border-primary/50"
-          ),
-          day_today: "bg-accent/30 font-semibold border-accent/50",
+          day_selected: "bg-primary/20 ring-2 ring-primary text-primary-foreground",
+          day_today: "bg-accent/50 font-semibold",
           day_outside: "text-muted-foreground/40 opacity-50",
           day_disabled: "text-muted-foreground opacity-30 cursor-not-allowed",
         }}
         components={{
-          IconLeft: () => <ChevronLeft className="h-5 w-5 text-primary" />,
-          IconRight: () => <ChevronRight className="h-5 w-5 text-primary" />,
+          IconLeft: () => <ChevronLeft className="h-5 w-5" />,
+          IconRight: () => <ChevronRight className="h-5 w-5" />,
           DayContent: ({ date }) => {
+            const phase = getMoonPhase(date);
             const dayNumber = date.getDate();
-            const isSelected = selectedDate.toDateString() === date.toDateString();
-            const isToday = new Date().toDateString() === date.toDateString();
-            const moonData = getMoonDataForDate(date);
             
             return (
               <div className="flex flex-col items-center gap-1">
-                <span className={cn(
-                  "text-sm font-medium transition-colors",
-                  isSelected && "text-primary font-bold",
-                  isToday && "text-accent-foreground"
-                )}>
-                  {dayNumber}
-                </span>
-                <MoonPhaseIcon 
-                  date={date} 
-                  isSelected={isSelected}
-                  moonData={moonData}
-                />
+                <span className="text-xs font-medium">{dayNumber}</span>
+                <MoonPhaseIcon phase={phase} />
               </div>
             );
           },
