@@ -42,6 +42,7 @@ const CONFIG = {
     fontWeight: '600',          // Peso de fuente
     animationDelay: 300,        // Delay adicional después de que aparezcan los botones (ms)
     animationDuration: 400,     // Duración de la animación del texto (ms)
+    closeAnimationDelay: 0,     // Delay al cerrar (los textos se meten primero)
   },
 };
 
@@ -61,7 +62,7 @@ export function RadialNavMenu() {
         offsetX: 0,
         offsetY: -0,
         distance: 50,
-        fontSize: '24px',      // 🎨 Tamaño individual
+        fontSize: '24px',
       },
     },
     {
@@ -75,7 +76,7 @@ export function RadialNavMenu() {
         offsetX: 0,
         offsetY: -8,
         distance: 50,
-        fontSize: '24px',      // 🎨 Tamaño individual
+        fontSize: '24px',
       },
     },
     {
@@ -89,7 +90,7 @@ export function RadialNavMenu() {
         offsetX: -0,
         offsetY: -20,
         distance: 50,
-        fontSize: '24px',      // 🎨 Tamaño individual
+        fontSize: '24px',
       },
     },
     {
@@ -103,7 +104,7 @@ export function RadialNavMenu() {
         offsetX: 15,
         offsetY: -35,
         distance: 50,
-        fontSize: '24px',      // 🎨 Tamaño individual
+        fontSize: '24px',
       },
     },
   ];
@@ -176,8 +177,16 @@ export function RadialNavMenu() {
           const textFontSize = button.textConfig?.fontSize ?? CONFIG.text.fontSize;
           
           // 🎬 Calcular delays de animación
-          const buttonDelay = index * 50;
-          const textDelay = buttonDelay + CONFIG.text.animationDelay;
+          const totalButtons = navButtons.length;
+          const reverseIndex = totalButtons - 1 - index;
+          
+          // Al ABRIR: Los botones aparecen primero, luego los textos
+          const buttonOpenDelay = index * 50;
+          const textOpenDelay = buttonOpenDelay + CONFIG.text.animationDelay;
+          
+          // Al CERRAR: Los textos se meten primero (inverso), luego los botones
+          const textCloseDelay = reverseIndex * 50 + CONFIG.text.closeAnimationDelay;
+          const buttonCloseDelay = textCloseDelay + 200; // Los botones esperan a que los textos se metan
           
           return (
             <div key={index}>
@@ -198,7 +207,7 @@ export function RadialNavMenu() {
                   transform: isOpen 
                     ? `translate(${x}px, ${y}px) scale(1)` 
                     : 'translate(0, 0) scale(0.3)',
-                  transitionDelay: isOpen ? `${buttonDelay}ms` : '0ms',
+                  transitionDelay: isOpen ? `${buttonOpenDelay}ms` : `${buttonCloseDelay}ms`,
                 }}
                 title={button.label}
               >
@@ -213,7 +222,7 @@ export function RadialNavMenu() {
                 </div>
               </button>
 
-              {/* 📝 Etiqueta de texto - Sale desde detrás del botón */}
+              {/* 📝 Etiqueta de texto - Sale y se mete del botón */}
               <div
                 className={cn(
                   "absolute bottom-0 right-0 whitespace-nowrap text-white",
@@ -222,12 +231,14 @@ export function RadialNavMenu() {
                   isOpen && "opacity-100"
                 )}
                 style={{
-                  // 🎬 Animación: Sale desde la posición del botón hacia su posición final
+                  // 🎬 Animación: 
+                  // ABIERTO: Sale desde el botón hacia afuera
+                  // CERRADO: Se mete desde afuera hacia el botón
                   transform: isOpen 
-                    ? `translate(${textPos.x}px, ${textPos.y}px) rotate(${textRotation}deg)` 
-                    : `translate(${x}px, ${y}px) rotate(${textRotation}deg) scale(0.5)`,
+                    ? `translate(${textPos.x}px, ${textPos.y}px) rotate(${textRotation}deg) scale(1)` 
+                    : `translate(${x}px, ${y}px) rotate(${textRotation}deg) scale(0.3)`,
                   
-                  transitionDelay: isOpen ? `${textDelay}ms` : '0ms',
+                  transitionDelay: isOpen ? `${textOpenDelay}ms` : `${textCloseDelay}ms`,
                   transitionDuration: `${CONFIG.text.animationDuration}ms`,
                   
                   // 🎨 Estilos del texto
