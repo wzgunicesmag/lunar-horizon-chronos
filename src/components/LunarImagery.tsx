@@ -17,7 +17,8 @@ interface APODData {
   copyright?: string;
 }
 
-const NASA_API_KEY = 'DEMO_KEY'; // Usando DEMO_KEY ya que funciona mejor
+// Usar la API key del archivo .env, con fallback a DEMO_KEY
+const NASA_API_KEY = import.meta.env.VITE_NASA_API_KEY || 'DEMO_KEY';
 
 export function LunarImagery({ date }: LunarImageryProps) {
   const [apodData, setApodData] = useState<APODData | null>(null);
