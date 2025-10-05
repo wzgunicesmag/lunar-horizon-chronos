@@ -6,6 +6,7 @@ import LunarInfo from "@/components/LunarInfo";
 import { LunarImagery } from "@/components/LunarImagery";
 import { LunarStories } from "@/components/LunarStories";
 import { NASADisclaimer } from "@/components/NASADisclaimer";
+import { RadialNavMenu } from "@/components/RadialNavMenu";
 import { useMoonPhase } from "@/hooks/useMoonPhase";
 import logoMuna from "@/images/logo_w.png";
 
@@ -138,6 +139,9 @@ const Index = () => {
           </p>
         </footer>
       </div>
+
+      {/* Menú de navegación radial */}
+      <RadialNavMenu />
     </div>
   );
 };

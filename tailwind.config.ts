@@ -2,7 +2,12 @@ import type { Config } from "tailwindcss";
 
 export default {
   darkMode: ["class"],
-  content: ["./pages/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}", "./app/**/*.{ts,tsx}", "./src/**/*.{ts,tsx}"],
+  content: [
+    "./pages/**/*.{ts,tsx}",
+    "./components/**/*.{ts,tsx}",
+    "./app/**/*.{ts,tsx}",
+    "./src/**/*.{ts,tsx}",
+  ],
   prefix: "",
   theme: {
     container: {
@@ -83,12 +88,12 @@ export default {
         "fade-in": {
           "0%": {
             opacity: "0",
-            transform: "translateY(20px)"
+            transform: "translateY(20px)",
           },
           "100%": {
             opacity: "1",
-            transform: "translateY(0)"
-          }
+            transform: "translateY(0)",
+          },
         },
         "glow-pulse": {
           "0%, 100%": {
@@ -114,6 +119,25 @@ export default {
             transform: "rotate(360deg)",
           },
         },
+        "pulse-scale": {
+          "0%, 100%": {
+            transform: "scale(1)",
+          },
+          "50%": {
+            transform: "scale(1.05)", // Aumenta/disminuye este valor
+          },
+        },
+        "bell-swing": {
+          "0%, 100%": {
+            transform: "rotate(0deg)",
+          },
+          "10%, 30%, 50%, 70%, 90%": {
+            transform: "rotate(-3deg)", // Aumenta para más rotación
+          },
+          "20%, 40%, 60%, 80%": {
+            transform: "rotate(3deg)", // Aumenta para más rotación
+          },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -122,6 +146,12 @@ export default {
         "glow-pulse": "glow-pulse 3s ease-in-out infinite",
         "float": "float 6s ease-in-out infinite",
         "rotate-slow": "rotate-slow 20s linear infinite",
+        "pulse-scale": "pulse-scale 2s ease-in-out infinite", // 👆 Cambia 2s para velocidad (1s = más rápido, 3s = más lento)
+        "bell-swing": "bell-swing 3s ease-in-out infinite",
+      },
+      boxShadow: {
+        "glow-white":
+          "0 0 20px rgba(168, 85, 247, 0.4), 0 0 40px rgba(168, 85, 247, 0.2)",
       },
     },
   },

@@ -77,12 +77,19 @@ All colors MUST be HSL.
   }
 }
 
-@layer base {
-  * {
-    @apply border-border;
-  }
+/* Eliminar círculo de enfoque en botones */
+button:focus {
+  outline: none;
+}
 
-  body {
-    @apply bg-background text-foreground;
-  }
+button:focus-visible {
+  outline: 2px solid transparent;
+}
+
+/* Prevenir selección en dispositivos táctiles */
+button {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
 }
