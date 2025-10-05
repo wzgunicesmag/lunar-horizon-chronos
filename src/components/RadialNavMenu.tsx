@@ -38,11 +38,11 @@ const CONFIG = {
     rotationOnPress: 5,         // Rotación suave al presionar
   },
 
-  // 🎨 EFECTOS VISUALES DEL BOTÓN PRINCIPAL
+  // 🎨 EFECTOS VISUALES DEL BOTÓN PRINCIPAL (🔵 AZUL BRILLANTE)
   mainButton: {
-    normalGlow: 'drop-shadow(0 0 20px rgba(168, 85, 247, 0.6)) drop-shadow(0 0 40px rgba(168, 85, 247, 0.3))',
-    pressedGlow: 'drop-shadow(0 0 30px rgba(168, 85, 247, 0.9)) drop-shadow(0 0 60px rgba(168, 85, 247, 0.6))',
-    hoverGlow: 'drop-shadow(0 0 25px rgba(168, 85, 247, 0.7)) drop-shadow(0 0 50px rgba(168, 85, 247, 0.4))',
+    normalGlow: 'drop-shadow(0 0 20px hsla(208, 91%, 57%, 0.6)) drop-shadow(0 0 40px hsla(208, 91%, 57%, 0.3))',
+    pressedGlow: 'drop-shadow(0 0 30px hsla(208, 91%, 57%, 0.9)) drop-shadow(0 0 60px hsla(208, 91%, 57%, 0.6))',
+    hoverGlow: 'drop-shadow(0 0 25px hsla(208, 91%, 57%, 0.7)) drop-shadow(0 0 50px hsla(208, 91%, 57%, 0.4))',
   },
 
   // 📝 CONFIGURACIÓN DE TEXTOS
@@ -264,6 +264,10 @@ export function RadialNavMenu() {
                     ? `translate(${x}px, ${y}px) scale(1)` 
                     : 'translate(0, 0) scale(0.3)',
                   transitionDelay: isOpen ? `${buttonOpenDelay}ms` : `${buttonCloseDelay}ms`,
+                  // 🔵 Sombra azul brillante en botones secundarios
+                  boxShadow: isOpen 
+                    ? '0 4px 20px hsla(208, 91%, 57%, 0.5), 0 0 40px hsla(208, 91%, 57%, 0.3)'
+                    : 'none',
                 }}
                 title={button.label}
               >
@@ -347,20 +351,22 @@ export function RadialNavMenu() {
             }}
           />
           
-          {/* 🎯 Onda de expansión suave */}
+          {/* 🎯 Onda de expansión suave (🔵 AZUL) */}
           {isPressed && (
             <>
               {/* Primera onda */}
               <div 
-                className="absolute inset-0 rounded-full bg-purple-400/30"
+                className="absolute inset-0 rounded-full"
                 style={{
+                  backgroundColor: 'hsla(208, 91%, 57%, 0.3)',
                   animation: 'ripple 0.8s cubic-bezier(0, 0, 0.2, 1)',
                 }}
               />
               {/* Segunda onda (más suave y lenta) */}
               <div 
-                className="absolute inset-0 rounded-full bg-purple-300/20"
+                className="absolute inset-0 rounded-full"
                 style={{
+                  backgroundColor: 'hsla(208, 91%, 57%, 0.2)',
                   animation: 'ripple 1s cubic-bezier(0, 0, 0.2, 1) 0.1s',
                 }}
               />
