@@ -29,26 +29,38 @@ const CONFIG = {
 
   // ⚙️ ANIMACIONES DEL BOTÓN PRINCIPAL
   animations: {
-    pressScale: 0.85,
-    pressDuration: 150,
-    hoverScale: 1.1,
-    rotationOnOpen: 45,
+    pressScale: 0.85,           // Se hace más pequeño al presionar (efecto de hundirse)
+    releaseScale: 1.05,         // Rebote al soltar
+    pressDuration: 150,         // Duración de la presión
+    releaseDuration: 250,       // Duración del rebote
+    hoverScale: 1.08,
+    rotationOnOpen: 75,
+    rotationOnPress: 5,         // Rotación suave al presionar
+  },
+
+  // 🎨 EFECTOS VISUALES DEL BOTÓN PRINCIPAL
+  mainButton: {
+    normalGlow: 'drop-shadow(0 0 20px rgba(168, 85, 247, 0.6)) drop-shadow(0 0 40px rgba(168, 85, 247, 0.3))',
+    pressedGlow: 'drop-shadow(0 0 30px rgba(168, 85, 247, 0.9)) drop-shadow(0 0 60px rgba(168, 85, 247, 0.6))',
+    hoverGlow: 'drop-shadow(0 0 25px rgba(168, 85, 247, 0.7)) drop-shadow(0 0 50px rgba(168, 85, 247, 0.4))',
   },
 
   // 📝 CONFIGURACIÓN DE TEXTOS
   text: {
-    defaultDistance: 50,        // Distancia por defecto desde el botón hasta el texto
-    fontSize: '14px',           // Tamaño de fuente por defecto
-    fontWeight: '600',          // Peso de fuente
-    animationDelay: 300,        // Delay adicional después de que aparezcan los botones (ms)
-    animationDuration: 400,     // Duración de la animación del texto (ms)
-    closeAnimationDelay: 0,     // Delay al cerrar (los textos se meten primero)
+    defaultDistance: 50,
+    fontSize: '14px',
+    fontWeight: '600',
+    animationDelay: 300,
+    animationDuration: 400,
+    closeAnimationDelay: 0,
   },
 };
 
 export function RadialNavMenu() {
   const [isOpen, setIsOpen] = useState(false);
   const [isPressed, setIsPressed] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
+  const [isReleasing, setIsReleasing] = useState(false);
 
   const navButtons: NavButton[] = [
     {
@@ -111,11 +123,18 @@ export function RadialNavMenu() {
 
   const handleMainButtonPress = () => {
     setIsPressed(true);
+    setIsReleasing(false);
   };
 
   const handleMainButtonRelease = () => {
     setIsPressed(false);
-    setIsOpen(!isOpen);
+    setIsReleasing(true);
+    
+    // Rebote al soltar
+    setTimeout(() => {
+      setIsReleasing(false);
+      setIsOpen(!isOpen);
+    }, CONFIG.animations.releaseDuration);
   };
 
   // Calcular posición de cada botón dentro de 90° (cuarto de círculo)
@@ -153,10 +172,47 @@ export function RadialNavMenu() {
     return { x: textX, y: textY };
   };
 
-  const getMainButtonTransform = () => {
-    const rotation = isOpen ? CONFIG.animations.rotationOnOpen : 0;
-    const scale = isPressed ? CONFIG.animations.pressScale : 1;
-    return `rotate(${rotation}deg) scale(${scale})`;
+  // 🎨 Obtener escala de la imagen
+  const getImageScale = () => {
+    if (isPressed) {
+      return CONFIG.animations.pressScale;
+    }
+    if (isReleasing) {
+      return CONFIG.animations.releaseScale;
+    }
+    if (isHovered) {
+      return CONFIG.animations.hoverScale;
+    }
+    return 1;
+  };
+
+  // 🎨 Obtener rotación de la imagen
+  const getImageRotation = () => {
+    const baseRotation = isOpen ? CONFIG.animations.rotationOnOpen : 0;
+    const pressRotation = isPressed ? CONFIG.animations.rotationOnPress : 0;
+    return baseRotation + pressRotation;
+  };
+
+  // 🎨 Obtener el brillo del botón principal
+  const getMainButtonGlow = () => {
+    if (isPressed) {
+      return CONFIG.mainButton.pressedGlow;
+    }
+    if (isHovered) {
+      return CONFIG.mainButton.hoverGlow;
+    }
+    return CONFIG.mainButton.normalGlow;
+  };
+
+  // 🎨 Obtener duración de la transición
+  const getTransitionDuration = () => {
+    if (isPressed) {
+      return CONFIG.animations.pressDuration;
+    }
+    if (isReleasing) {
+      return CONFIG.animations.releaseDuration;
+    }
+    return 200;
   };
 
   return (
@@ -186,7 +242,7 @@ export function RadialNavMenu() {
           
           // Al CERRAR: Los textos se meten primero (inverso), luego los botones
           const textCloseDelay = reverseIndex * 50 + CONFIG.text.closeAnimationDelay;
-          const buttonCloseDelay = textCloseDelay + 200; // Los botones esperan a que los textos se metan
+          const buttonCloseDelay = textCloseDelay + 200;
           
           return (
             <div key={index}>
@@ -231,9 +287,6 @@ export function RadialNavMenu() {
                   isOpen && "opacity-100"
                 )}
                 style={{
-                  // 🎬 Animación: 
-                  // ABIERTO: Sale desde el botón hacia afuera
-                  // CERRADO: Se mete desde afuera hacia el botón
                   transform: isOpen 
                     ? `translate(${textPos.x}px, ${textPos.y}px) rotate(${textRotation}deg) scale(1)` 
                     : `translate(${x}px, ${y}px) rotate(${textRotation}deg) scale(0.3)`,
@@ -241,7 +294,6 @@ export function RadialNavMenu() {
                   transitionDelay: isOpen ? `${textOpenDelay}ms` : `${textCloseDelay}ms`,
                   transitionDuration: `${CONFIG.text.animationDuration}ms`,
                   
-                  // 🎨 Estilos del texto
                   fontSize: textFontSize,
                   fontWeight: CONFIG.text.fontWeight,
                   transformOrigin: 'center',
@@ -254,36 +306,85 @@ export function RadialNavMenu() {
           );
         })}
 
-        {/* Botón principal */}
+        {/* Botón principal con efecto de presión mejorado */}
         <button
           onMouseDown={handleMainButtonPress}
           onMouseUp={handleMainButtonRelease}
-          onMouseLeave={() => setIsPressed(false)}
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => {
+            setIsPressed(false);
+            setIsHovered(false);
+            setIsReleasing(false);
+          }}
           onTouchStart={handleMainButtonPress}
           onTouchEnd={handleMainButtonRelease}
           className={cn(
             "relative w-16 h-16 rounded-full",
             "flex items-center justify-center",
-            "animate-pulse-scale",
+            !isPressed && !isReleasing && "animate-pulse-scale",
             "focus:outline-none",
-            "transition-transform",
-            "active:scale-90"
+            "cursor-pointer",
+            "select-none"
           )}
           style={{
-            filter: 'drop-shadow(0 0 20px rgba(168, 85, 247, 0.6)) drop-shadow(0 0 40px rgba(168, 85, 247, 0.3))',
+            filter: getMainButtonGlow(),
             WebkitTapHighlightColor: 'transparent',
-            transform: getMainButtonTransform(),
-            transitionDuration: `${CONFIG.animations.pressDuration}ms`,
-            transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)',
           }}
         >
+          {/* 🎨 Imagen con animación suave */}
           <img 
             src={symbolMuna} 
             alt="MUNA" 
-            className="w-14 h-14 object-contain animate-bell-swing pointer-events-none"
+            className="w-14 h-14 object-contain pointer-events-none"
+            style={{
+              transform: `rotate(${getImageRotation()}deg) scale(${getImageScale()})`,
+              transition: `transform ${getTransitionDuration()}ms ${
+                isReleasing 
+                  ? 'cubic-bezier(0.34, 1.56, 0.64, 1)' // Rebote elástico
+                  : 'cubic-bezier(0.4, 0, 0.2, 1)' // Suave
+              }`,
+              filter: isPressed ? 'brightness(1.25)' : 'brightness(1)',
+            }}
           />
+          
+          {/* 🎯 Onda de expansión suave */}
+          {isPressed && (
+            <>
+              {/* Primera onda */}
+              <div 
+                className="absolute inset-0 rounded-full bg-purple-400/30"
+                style={{
+                  animation: 'ripple 0.8s cubic-bezier(0, 0, 0.2, 1)',
+                }}
+              />
+              {/* Segunda onda (más suave y lenta) */}
+              <div 
+                className="absolute inset-0 rounded-full bg-purple-300/20"
+                style={{
+                  animation: 'ripple 1s cubic-bezier(0, 0, 0.2, 1) 0.1s',
+                }}
+              />
+            </>
+          )}
         </button>
       </div>
+      
+      {/* 🎨 Animación de onda suave */}
+      <style>{`
+        @keyframes ripple {
+          0% {
+            transform: scale(1);
+            opacity: 1;
+          }
+          50% {
+            opacity: 0.5;
+          }
+          100% {
+            transform: scale(2.5);
+            opacity: 0;
+          }
+        }
+      `}</style>
     </div>
   );
 }
