@@ -36,31 +36,35 @@ export function CalendarioSection({
           </p>
         </div>
 
+        {/* Calendario horizontal - Ancho completo */}
+        <div className="mb-8">
+          <LunarCalendar
+            selectedDate={selectedDate}
+            onDateSelect={onDateSelect}
+          />
+        </div>
+
+        {/* Luna 3D y información - Grid horizontal */}
         <div className="grid lg:grid-cols-2 gap-8">
-          <div className="space-y-6">
-            <LunarCalendar
-              selectedDate={selectedDate}
-              onDateSelect={onDateSelect}
-            />
+          {/* Izquierda - Modelo 3D de la Luna */}
+          <div className="card-glass rounded-2xl p-8 h-[500px] relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 pointer-events-none" />
+            <Suspense
+              fallback={
+                <div className="w-full h-full flex items-center justify-center">
+                  <div className="text-center">
+                    <Moon className="w-16 h-16 mx-auto mb-4 text-primary animate-glow-pulse" />
+                    <p className="text-muted-foreground">Cargando luna...</p>
+                  </div>
+                </div>
+              }
+            >
+              <MoonViewer3D phase={moonData.phase} />
+            </Suspense>
           </div>
 
+          {/* Derecha - Información Lunar */}
           <div className="space-y-6">
-            <div className="card-glass rounded-2xl p-8 h-[500px] relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 pointer-events-none" />
-              <Suspense
-                fallback={
-                  <div className="w-full h-full flex items-center justify-center">
-                    <div className="text-center">
-                      <Moon className="w-16 h-16 mx-auto mb-4 text-primary animate-glow-pulse" />
-                      <p className="text-muted-foreground">Cargando luna...</p>
-                    </div>
-                  </div>
-                }
-              >
-                <MoonViewer3D phase={moonData.phase} />
-              </Suspense>
-            </div>
-
             <LunarInfo
               phaseName={moonData.phaseName}
               phasePercentage={moonData.phasePercentage}

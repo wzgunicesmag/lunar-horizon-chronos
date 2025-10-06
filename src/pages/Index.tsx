@@ -17,12 +17,12 @@ const Index = () => {
 
   return (
     <div className="min-h-screen w-full overflow-hidden relative">
-      {/* Animated stars background */}
+      {/* Animated stars background with smooth transitions */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {[...Array(50)].map((_, i) => (
           <div
             key={i}
-            className="absolute w-1 h-1 bg-white/60 rounded-full animate-glow-pulse"
+            className="absolute w-1 h-1 bg-white/60 rounded-full animate-glow-pulse transition-all duration-1000 ease-in-out"
             style={{
               left: `${Math.random() * 100}%`,
               top: `${Math.random() * 100}%`,
@@ -51,35 +51,43 @@ const Index = () => {
           )}
         </header>
 
-        {/* Secciones con animación de transición */}
+        {/* Secciones con animación de transición suave */}
         <div className="relative">
-          {currentSection === 'calendario' && (
-            <CalendarioSection
-              selectedDate={selectedDate}
-              onDateSelect={setSelectedDate}
-              moonData={moonData}
-              loading={loading}
-            />
-          )}
+          <div className={`transition-opacity duration-700 ease-in-out ${currentSection === 'calendario' ? 'opacity-100' : 'opacity-0 absolute inset-0 pointer-events-none'}`}>
+            {currentSection === 'calendario' && (
+              <CalendarioSection
+                selectedDate={selectedDate}
+                onDateSelect={setSelectedDate}
+                moonData={moonData}
+                loading={loading}
+              />
+            )}
+          </div>
 
-          {currentSection === 'analisis' && (
-            <AnalisisSection
-              selectedDate={selectedDate}
-              onDateSelect={setSelectedDate}
-              moonData={moonData}
-            />
-          )}
+          <div className={`transition-opacity duration-700 ease-in-out ${currentSection === 'analisis' ? 'opacity-100' : 'opacity-0 absolute inset-0 pointer-events-none'}`}>
+            {currentSection === 'analisis' && (
+              <AnalisisSection
+                selectedDate={selectedDate}
+                onDateSelect={setSelectedDate}
+                moonData={moonData}
+              />
+            )}
+          </div>
 
-          {currentSection === 'eventos' && (
-            <EventosSection
-              selectedDate={selectedDate}
-              onDateSelect={setSelectedDate}
-            />
-          )}
+          <div className={`transition-opacity duration-700 ease-in-out ${currentSection === 'eventos' ? 'opacity-100' : 'opacity-0 absolute inset-0 pointer-events-none'}`}>
+            {currentSection === 'eventos' && (
+              <EventosSection
+                selectedDate={selectedDate}
+                onDateSelect={setSelectedDate}
+              />
+            )}
+          </div>
 
-          {currentSection === 'perfil' && (
-            <PerfilSection />
-          )}
+          <div className={`transition-opacity duration-700 ease-in-out ${currentSection === 'perfil' ? 'opacity-100' : 'opacity-0 absolute inset-0 pointer-events-none'}`}>
+            {currentSection === 'perfil' && (
+              <PerfilSection />
+            )}
+          </div>
         </div>
 
         {/* Disclaimer NASA */}
