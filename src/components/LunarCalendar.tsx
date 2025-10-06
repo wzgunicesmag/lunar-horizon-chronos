@@ -33,8 +33,8 @@ function getMoonPhase(date: Date): number {
 }
 
 // Component to render moon phase icon (matches API calculation)
-function MoonPhaseIcon({ phase }: { phase: number }) {
-  const size = 52;
+function MoonPhaseIcon({ phase, isMobile = false }: { phase: number; isMobile?: boolean }) {
+  const size = isMobile ? 32 : 52;
   const center = size / 2;
   const radius = size / 2 - 2;
 
@@ -57,33 +57,20 @@ function MoonPhaseIcon({ phase }: { phase: number }) {
   }
 
   // Calculate the shape of the illuminated portion
-  // The terminator (day/night line) is an ellipse that varies with phase
-  // Using the same formula as the 3D viewer and API
-  
   const isWaxing = phase < 0.5;
-  
-  // Calculate the x-radius of the terminator ellipse
-  // This creates the crescent/gibbous shape
-  // cos(0) = 1 (new moon, terminator at right edge)
-  // cos(π/2) = 0 (quarter moon, terminator at center)
-  // cos(π) = -1 (full moon, terminator at left edge)
   const angle = phase * Math.PI * 2;
   const terminatorRadius = Math.abs(Math.cos(angle)) * radius;
   
   let path: string;
   
   if (isWaxing) {
-    // Waxing: 0 to 0.5 - light from RIGHT side
-    // The lit portion grows from a thin crescent to full
     if (phase < 0.25) {
-      // Waxing crescent: thin crescent on the right
       path = `
         M ${center},${center - radius}
         A ${terminatorRadius},${radius} 0 0,0 ${center},${center + radius}
         A ${radius},${radius} 0 0,0 ${center},${center - radius}
       `;
     } else {
-      // Waxing gibbous: more than half lit on the right
       path = `
         M ${center},${center - radius}
         A ${terminatorRadius},${radius} 0 0,1 ${center},${center + radius}
@@ -91,17 +78,13 @@ function MoonPhaseIcon({ phase }: { phase: number }) {
       `;
     }
   } else {
-    // Waning: 0.5 to 1 - light from LEFT side
-    // The lit portion shrinks from full to a thin crescent
     if (phase < 0.75) {
-      // Waning gibbous: more than half lit on the left
       path = `
         M ${center},${center - radius}
         A ${radius},${radius} 0 0,1 ${center},${center + radius}
         A ${terminatorRadius},${radius} 0 0,1 ${center},${center - radius}
       `;
     } else {
-      // Waning crescent: thin crescent on the left
       path = `
         M ${center},${center - radius}
         A ${radius},${radius} 0 0,1 ${center},${center + radius}
@@ -112,10 +95,7 @@ function MoonPhaseIcon({ phase }: { phase: number }) {
   
   return (
     <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="mx-auto">
-      {/* Dark side of moon (base) */}
       <circle cx={center} cy={center} r={radius} fill="hsl(var(--muted))" />
-      
-      {/* Illuminated portion */}
       <path d={path} fill="hsl(var(--primary))" />
     </svg>
   );
@@ -123,8 +103,8 @@ function MoonPhaseIcon({ phase }: { phase: number }) {
 
 export default function LunarCalendar({ onDateSelect, selectedDate }: LunarCalendarProps) {
   return (
-    <Card className="card-glass p-8 animate-fade-in">
-      <h2 className="text-2xl font-semibold mb-6 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+    <Card className="card-glass p-4 md:p-8 animate-fade-in w-full overflow-x-auto">
+      <h2 className="text-xl md:text-2xl font-semibold mb-4 md:mb-6 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
         Calendario Lunar
       </h2>
       <DayPicker
@@ -132,44 +112,47 @@ export default function LunarCalendar({ onDateSelect, selectedDate }: LunarCalen
         selected={selectedDate}
         onSelect={(date) => date && onDateSelect(date)}
         showOutsideDays={true}
-        className={cn("p-3 pointer-events-auto")}
+        className={cn("p-0 md:p-3 pointer-events-auto w-full")}
         classNames={{
-          months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
+          months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0 w-full",
           month: "space-y-4 w-full",
-          caption: "flex justify-center pt-1 relative items-center mb-4",
-          caption_label: "text-lg font-medium",
+          caption: "flex justify-center pt-1 relative items-center mb-2 md:mb-4",
+          caption_label: "text-base md:text-lg font-medium",
           nav: "space-x-1 flex items-center",
           nav_button: cn(
             buttonVariants({ variant: "outline" }),
-            "h-9 w-9 bg-transparent p-0 opacity-50 hover:opacity-100",
+            "h-7 w-7 md:h-9 md:w-9 bg-transparent p-0 opacity-50 hover:opacity-100",
           ),
-          nav_button_previous: "absolute left-1",
-          nav_button_next: "absolute right-1",
+          nav_button_previous: "absolute left-0 md:left-1",
+          nav_button_next: "absolute right-0 md:right-1",
           table: "w-full border-collapse",
-          head_row: "flex w-full justify-around mb-2",
-          head_cell: "text-muted-foreground rounded-md w-24 font-medium text-sm",
-          row: "flex w-full justify-around mt-1",
-          cell: "relative p-1",
+          head_row: "flex w-full justify-between md:justify-around mb-2",
+          head_cell: "text-muted-foreground rounded-md flex-1 min-w-0 md:w-24 font-medium text-xs md:text-sm text-center px-0.5",
+          row: "flex w-full justify-between md:justify-around mt-1",
+          cell: "relative p-0.5 md:p-1 flex-1 min-w-0",
           day: cn(
-            "h-28 w-24 p-2 font-normal flex flex-col items-center justify-center gap-2 rounded-md hover:bg-accent transition-colors cursor-pointer",
-            "aria-selected:bg-primary/20 aria-selected:ring-2 aria-selected:ring-primary"
+            "h-16 md:h-28 w-full p-1 md:p-2 font-normal flex flex-col items-center justify-center gap-1 md:gap-2 rounded-md hover:bg-accent transition-colors cursor-pointer",
+            "aria-selected:bg-primary/20 aria-selected:ring-1 md:aria-selected:ring-2 aria-selected:ring-primary"
           ),
-          day_selected: "bg-primary/20 ring-2 ring-primary text-primary-foreground",
+          day_selected: "bg-primary/20 ring-1 md:ring-2 ring-primary text-primary-foreground",
           day_today: "bg-accent/50 font-semibold",
           day_outside: "text-muted-foreground/40 opacity-50",
           day_disabled: "text-muted-foreground opacity-30 cursor-not-allowed",
         }}
         components={{
-          IconLeft: () => <ChevronLeft className="h-5 w-5" />,
-          IconRight: () => <ChevronRight className="h-5 w-5" />,
+          IconLeft: () => <ChevronLeft className="h-4 w-4 md:h-5 md:w-5" />,
+          IconRight: () => <ChevronRight className="h-4 w-4 md:h-5 md:w-5" />,
           DayContent: ({ date }) => {
             const phase = getMoonPhase(date);
             const dayNumber = date.getDate();
             
+            // Detectar si es móvil basado en el ancho de la ventana
+            const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+            
             return (
-              <div className="flex flex-col items-center gap-2">
-                <span className="text-sm font-medium">{dayNumber}</span>
-                <MoonPhaseIcon phase={phase} />
+              <div className="flex flex-col items-center gap-0.5 md:gap-2 w-full">
+                <span className="text-xs md:text-sm font-medium">{dayNumber}</span>
+                <MoonPhaseIcon phase={phase} isMobile={isMobile} />
               </div>
             );
           },
