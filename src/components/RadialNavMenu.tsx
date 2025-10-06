@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { Home, Calendar, Image, BookOpen } from 'lucide-react';
+import { Calendar, LineChart, CalendarDays, User } from 'lucide-react';
 import symbolMuna from '@/images/symbol_muna.png';
 import { cn } from '@/lib/utils';
-import { useAppNavigation } from '@/hooks/useAppNavigation'; // ⬅️ AGREGAR ESTA LÍNEA
+import { useAppNavigation } from '@/hooks/useAppNavigation';
 
 // 🎨 CONFIGURACIÓN INDIVIDUAL DEL TEXTO
 interface NavButton {
@@ -54,7 +54,7 @@ const CONFIG = {
 };
 
 export function RadialNavMenu() {
-  const { setSection } = useAppNavigation(); // ⬅️ AGREGAR ESTA LÍNEA
+  const { setSection } = useAppNavigation();
   const [isOpen, setIsOpen] = useState(false);
   const [isPressed, setIsPressed] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
@@ -62,11 +62,11 @@ export function RadialNavMenu() {
 
   const navButtons: NavButton[] = [
     {
-      icon: <Home className={`w-[${CONFIG.iconSize}px] h-[${CONFIG.iconSize}px]`} />,
+      icon: <Calendar className={`w-[${CONFIG.iconSize}px] h-[${CONFIG.iconSize}px]`} />,
       label: 'CALENDARIO',
       onClick: () => {
-        setSection('calendario'); // ⬅️ CAMBIAR ESTA LÍNEA
-        setIsOpen(false); // ⬅️ AGREGAR ESTA LÍNEA
+        setSection('calendario');
+        setIsOpen(false);
       },
       textConfig: {
         rotation: -0,
@@ -77,11 +77,11 @@ export function RadialNavMenu() {
       },
     },
     {
-      icon: <Calendar className={`w-[${CONFIG.iconSize}px] h-[${CONFIG.iconSize}px]`} />,
+      icon: <LineChart className={`w-[${CONFIG.iconSize}px] h-[${CONFIG.iconSize}px]`} />,
       label: 'ANALISIS',
       onClick: () => {
-        setSection('analisis'); // ⬅️ CAMBIAR ESTA LÍNEA
-        setIsOpen(false); // ⬅️ AGREGAR ESTA LÍNEA
+        setSection('analisis');
+        setIsOpen(false);
       },
       textConfig: {
         rotation: 20,
@@ -92,11 +92,11 @@ export function RadialNavMenu() {
       },
     },
     {
-      icon: <Image className={`w-[${CONFIG.iconSize}px] h-[${CONFIG.iconSize}px]`} />,
+      icon: <CalendarDays className={`w-[${CONFIG.iconSize}px] h-[${CONFIG.iconSize}px]`} />,
       label: 'EVENTOS',
       onClick: () => {
-        setSection('eventos'); // ⬅️ CAMBIAR ESTA LÍNEA
-        setIsOpen(false); // ⬅️ AGREGAR ESTA LÍNEA
+        setSection('eventos');
+        setIsOpen(false);
       },
       textConfig: {
         rotation: 40,
@@ -107,11 +107,11 @@ export function RadialNavMenu() {
       },
     },
     {
-      icon: <BookOpen className={`w-[${CONFIG.iconSize}px] h-[${CONFIG.iconSize}px]`} />,
+      icon: <User className={`w-[${CONFIG.iconSize}px] h-[${CONFIG.iconSize}px]`} />,
       label: 'PERFIL',
       onClick: () => {
-        setSection('perfil'); // ⬅️ CAMBIAR ESTA LÍNEA
-        setIsOpen(false); // ⬅️ AGREGAR ESTA LÍNEA
+        setSection('perfil');
+        setIsOpen(false);
       },
       textConfig: {
         rotation: 70,
