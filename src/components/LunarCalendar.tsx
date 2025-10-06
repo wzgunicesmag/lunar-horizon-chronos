@@ -34,7 +34,7 @@ function getMoonPhase(date: Date): number {
 
 // Component to render moon phase icon (matches API calculation)
 function MoonPhaseIcon({ phase }: { phase: number }) {
-  const size = 32;
+  const size = 52;
   const center = size / 2;
   const radius = size / 2 - 2;
 
@@ -147,11 +147,11 @@ export default function LunarCalendar({ onDateSelect, selectedDate }: LunarCalen
           nav_button_next: "absolute right-1",
           table: "w-full border-collapse",
           head_row: "flex w-full justify-around mb-2",
-          head_cell: "text-muted-foreground rounded-md w-16 font-medium text-sm",
+          head_cell: "text-muted-foreground rounded-md w-24 font-medium text-sm",
           row: "flex w-full justify-around mt-1",
           cell: "relative p-1",
           day: cn(
-            "h-20 w-16 p-1 font-normal flex flex-col items-center justify-center gap-1 rounded-md hover:bg-accent transition-colors cursor-pointer",
+            "h-28 w-24 p-2 font-normal flex flex-col items-center justify-center gap-2 rounded-md hover:bg-accent transition-colors cursor-pointer",
             "aria-selected:bg-primary/20 aria-selected:ring-2 aria-selected:ring-primary"
           ),
           day_selected: "bg-primary/20 ring-2 ring-primary text-primary-foreground",
@@ -167,8 +167,8 @@ export default function LunarCalendar({ onDateSelect, selectedDate }: LunarCalen
             const dayNumber = date.getDate();
             
             return (
-              <div className="flex flex-col items-center gap-1">
-                <span className="text-xs font-medium">{dayNumber}</span>
+              <div className="flex flex-col items-center gap-2">
+                <span className="text-sm font-medium">{dayNumber}</span>
                 <MoonPhaseIcon phase={phase} />
               </div>
             );

@@ -29,7 +29,7 @@ export function PerfilSection() {
     },
     {
       name: "OCTAVIO ECHEVERRY GIL",
-      email: "octavio153@hotmail.com",
+      email: "Oecheverryg@unadvirtual.edu.co",
       website: "octavio153@hotmail.com",
       github: "octavio153@hotmail.com",
     },
@@ -183,15 +183,12 @@ export function PerfilSection() {
             {/* Descripción del Proyecto */}
             <div className="max-w-3xl mx-auto mb-6 p-4 rounded-lg bg-gradient-to-br from-primary/5 to-secondary/5 border border-primary">
               <p className="text-sm text-muted-foreground leading-relaxed">
-                [AQUÍ VA LA DESCRIPCIÓN DEL PROYECTO - Reemplaza este texto con la descripción completa de MUNA y su propósito en la hackathon 2025]
+                <span className="font-semibold text-foreground">MUNA</span> Palabra compuesta que evoca Luna - Mundo - Naturaleza y que suena a raíz indígena.  conecta la sabiduría ancestral colombiana 
+                con datos científicos de la NASA. Inspirados en el tradicional Almanaque Bristol que guió a generaciones de agricultores, 
+                creamos una herramienta digital interactiva que integra fases lunares, eventos astronómicos y datos climáticos. 
+                Transformamos una tradición centenaria en una experiencia moderna y accesible que une ciencia, cultura y tecnología 
+                para apoyar a comunidades agrícolas y entusiastas del cosmos.
               </p>
-            </div>
-
-            <div className="flex items-center justify-center gap-2 text-sm">
-              <Trophy className="w-4 h-4 text-yellow-500" />
-              <span className="text-muted-foreground">
-                NASA Space Apps Challenge 2025
-              </span>
             </div>
           </div>
 
@@ -199,7 +196,7 @@ export function PerfilSection() {
             {teamMembers.map((member, index) => (
               <div
                 key={index}
-                className="group relative overflow-hidden rounded-xl bg-gradient-to-br from-muted/30 to-muted/10 p-6 hover:from-primary/10 hover:to-secondary/10 transition-all duration-300 border border-border/50 hover:border-primary/50"
+                className="group relative overflow-hidden rounded-xl bg-gradient-to-br from-muted/30 to-muted/10 p-6 transition-all duration-300 border"
               >
                 <div className="absolute top-0 right-0 w-20 h-20 bg-primary/5 rounded-full blur-2xl group-hover:bg-primary/10 transition-all"></div>
                 
