@@ -153,6 +153,23 @@ export default {
         "glow-white":
           "0 0 20px rgba(168, 85, 247, 0.4), 0 0 40px rgba(168, 85, 247, 0.2)",
       },
+      fontFamily: {
+        sans: [
+          'Overpass', 
+          'system-ui', 
+          '-apple-system', 
+          'BlinkMacSystemFont', 
+          'Segoe UI', 
+          'Roboto', 
+          'sans-serif'
+        ],
+        heading: [
+          'Fira Sans', 
+          'Overpass', 
+          'system-ui', 
+          'sans-serif'
+        ],
+      },
     },
   },
   plugins: [require("tailwindcss-animate")],

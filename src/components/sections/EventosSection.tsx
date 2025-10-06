@@ -14,8 +14,8 @@ export function EventosSection({ selectedDate, onDateSelect }: EventosSectionPro
       <div className="max-w-7xl mx-auto mb-8">
         <div className="flex items-center gap-2 mb-6">
           <Satellite className="w-6 h-6 text-primary" />
-          <h2 className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-            Recursos NASA
+          <h2 className="text-2xl font-bold font-heading bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+            RECURSOS NASA
           </h2>
         </div>
         

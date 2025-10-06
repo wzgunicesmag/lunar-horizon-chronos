@@ -21,8 +21,8 @@ export function AnalisisSection({
       <div className="max-w-7xl mx-auto mb-8">
         <div className="flex items-center gap-2 mb-6">
           <Moon className="w-6 h-6 text-primary" />
-          <h2 className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-            Análisis Lunar Detallado
+          <h2 className="text-2xl font-bold font-heading bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+            ANÁLISIS LUNAR DETALLADO
           </h2>
         </div>
         

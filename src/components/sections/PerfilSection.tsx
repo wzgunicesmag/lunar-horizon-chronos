@@ -41,8 +41,8 @@ export function PerfilSection() {
         {/* Header */}
         <div className="flex items-center gap-2 mb-6">
           <User className="w-6 h-6 text-primary" />
-          <h2 className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-            Perfil de Usuario
+          <h2 className="text-2xl font-bold font-heading bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+            PERFIL DE USUARIO
           </h2>
         </div>
 
@@ -171,12 +171,12 @@ export function PerfilSection() {
           <div className="text-center mb-6">
             <div className="flex items-center justify-center gap-2 mb-4">
               <Sparkles className="w-6 h-6 text-primary animate-glow-pulse" />
-              <h3 className="text-3xl font-bold bg-gradient-to-r from-primary via-secondary to-primary bg-clip-text text-transparent">
+          <h2 className="text-2xl font-bold font-heading bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
                 MUNA
-              </h3>
+              </h2>
               <Sparkles className="w-6 h-6 text-primary animate-glow-pulse" />
             </div>
-            <p className="text-lg text-muted-foreground italic mb-4">
+            <p className="text-lg text-muted-foreground italic font-sans">
               "El cosmos en nuestras raíces"
             </p>
             
