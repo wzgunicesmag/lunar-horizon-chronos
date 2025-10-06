@@ -39,23 +39,23 @@ export function WelcomeScreen({ onSkip }: WelcomeScreenProps) {
     >
       {/* Contenido con fade-in después de 1 segundo */}
       <div
-        className={`w-full h-full flex flex-col items-center justify-center transition-opacity duration-1000 ${
+        className={`w-full h-full flex flex-col items-center justify-center transition-opacity duration-1000 px-4 ${
           showContent ? 'opacity-100' : 'opacity-0'
         }`}
       >
         {/* Contenido Principal */}
-        <div className="max-w-4xl w-full px-6 space-y-8">
+        <div className="max-w-4xl w-full space-y-4 md:space-y-8">
           {/* Logos */}
-          <div className="flex items-center justify-center gap-8 mb-6">
+          <div className="flex items-center justify-center gap-4 md:gap-8 mb-4 md:mb-6">
             <img
               src={logoBPng}
               alt="MUNA Logo Blue"
-              className="h-20 md:h-24 object-contain"
+              className="h-12 sm:h-16 md:h-20 lg:h-24 object-contain"
             />
             <img
               src={logoWPng}
               alt="MUNA Logo White"
-              className="h-20 md:h-24 object-contain"
+              className="h-12 sm:h-16 md:h-20 lg:h-24 object-contain"
             />
           </div>
 
@@ -65,7 +65,7 @@ export function WelcomeScreen({ onSkip }: WelcomeScreenProps) {
           </div>
 
           {/* Video de YouTube */}
-          <div className="relative w-full aspect-video rounded-2xl overflow-hidden shadow-2xl">
+          <div className="relative w-full aspect-video rounded-xl md:rounded-2xl overflow-hidden shadow-2xl">
             <iframe
               className="absolute inset-0 w-full h-full"
               src="https://www.youtube.com/embed/TU_ID_DE_VIDEO?autoplay=1&mute=1&rel=0&modestbranding=1"
@@ -77,17 +77,17 @@ export function WelcomeScreen({ onSkip }: WelcomeScreenProps) {
           </div>
 
           {/* Botón Saltar - Debajo del reproductor a la derecha */}
-          <div className="flex justify-end">
+          <div className="flex justify-center sm:justify-end">
             <button
               onClick={handleSkip}
-              className="flex items-center gap-3 px-6 py-2 rounded-lg font-semibold transition-all hover:scale-105 shadow-lg text-xl"
+              className="flex items-center gap-2 md:gap-3 px-2 sm:px-5 md:px-4 py-2 md:py-2 rounded-lg font-semibold transition-all hover:scale-105 shadow-lg text-sm sm:text-base md:text-lg lg:text-l"
               style={{
                 backgroundColor: 'hsl(208, 91%, 57%)',
                 color: 'hsl(0, 0%, 0%)',
               }}
             >
-              <span>SALTAR INTRODUCCIÓN</span>
-              <X className="w-6 h-6" />
+              <span className="whitespace-nowrap">SALTAR INTRODUCCIÓN</span>
+              <X className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 flex-shrink-0" />
             </button>
           </div>
 
